@@ -34,7 +34,7 @@ An interactive Algebra 1 Ohio State Test (OST) review game paired with a realist
 1. Push this repository to GitHub (default branch `main`).
 2. In your GitHub repository, go to **Settings -> Pages**.
 3. Under **Build and deployment -> Source**, select **GitHub Actions**.
-4. The included `.github/workflows/deploy.yml` workflow automatically runs `npm ci`, `npm run build`, and deploys `dist/` to `https://<your-username>.github.io/<your-repo>/`.
+4. The included `.github/workflows/deploy.yml` workflow automatically installs dependencies, runs `npm run build`, and deploys `dist/` to `https://<your-username>.github.io/<your-repo>/`.
    - `vite.config.ts` uses `base: './'` so all assets resolve correctly on any GitHub Pages subpath.
 
 ### Enabling Google Sign-In on Your GitHub Pages URL
