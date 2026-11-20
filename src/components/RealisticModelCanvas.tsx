@@ -201,16 +201,84 @@ function drawHairBack(ctx: CanvasRenderingContext2D, model: ModelProfile) {
         ctx.moveTo(bx, 185 + col * 8);
         ctx.quadraticCurveTo(bx + side * 8, 390, bx - side * 4, 610);
         ctx.stroke();
+
+        // Subtle woven braid highlight notches
+        ctx.strokeStyle = hexToRgba(hairHighlight, 0.35);
+        ctx.lineWidth = 2;
+        for (let y = 240; y < 590; y += 26) {
+          ctx.beginPath();
+          ctx.moveTo(bx - 4, y);
+          ctx.lineTo(bx + 4, y + 7);
+          ctx.stroke();
+        }
       }
     }
-  } else {
+  } else if (model.hairStyle === 'updo') {
+    // High top-knot bun with sleek pulled-back crown
     ctx.beginPath();
-    ctx.moveTo(CX - 145, 220);
-    ctx.bezierCurveTo(CX - 175, 360, CX - 165, 510, CX - 145, 620);
-    ctx.lineTo(CX + 145, 620);
-    ctx.bezierCurveTo(CX + 165, 510, CX + 175, 360, CX + 145, 220);
-    ctx.bezierCurveTo(CX + 138, 88, CX - 138, 88, CX - 145, 220);
+    ctx.ellipse(CX, 165, 118, 72, 0, Math.PI, Math.PI * 2);
     ctx.fill();
+
+    // Sculpted high bun above crown
+    const bunGrad = ctx.createRadialGradient(CX - 14, 60, 8, CX, 74, 64);
+    bunGrad.addColorStop(0, hairHighlight);
+    bunGrad.addColorStop(0.55, hairBase);
+    bunGrad.addColorStop(1, hairShadow);
+    ctx.fillStyle = bunGrad;
+    ctx.beginPath();
+    ctx.ellipse(CX, 74, 58, 46, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = hexToRgba(hairShadow, 0.55);
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.ellipse(CX, 74, 42, 24, -0.15, 0.2, Math.PI * 1.45);
+    ctx.stroke();
+  } else if (model.hairStyle === 'sleek') {
+    // Smooth glass-straight silhouette with glossy vertical sheen
+    ctx.beginPath();
+    ctx.moveTo(CX - 134, 215);
+    ctx.bezierCurveTo(CX - 146, 355, CX - 146, 515, CX - 134, 625);
+    ctx.lineTo(CX + 134, 625);
+    ctx.bezierCurveTo(CX + 146, 515, CX + 146, 355, CX + 134, 215);
+    ctx.bezierCurveTo(CX + 130, 88, CX - 130, 88, CX - 134, 215);
+    ctx.fill();
+
+    ctx.strokeStyle = hexToRgba(hairHighlight, 0.28);
+    ctx.lineWidth = 3;
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(CX + side * 124, 240);
+      ctx.lineTo(CX + side * 128, 600);
+      ctx.stroke();
+    }
+  } else {
+    // Soft S-curved cascading waves
+    ctx.beginPath();
+    ctx.moveTo(CX - 144, 218);
+    ctx.bezierCurveTo(CX - 186, 305, CX - 145, 395, CX - 178, 480);
+    ctx.bezierCurveTo(CX - 190, 535, CX - 160, 585, CX - 146, 624);
+    ctx.lineTo(CX + 146, 624);
+    ctx.bezierCurveTo(CX + 160, 585, CX + 190, 535, CX + 178, 480);
+    ctx.bezierCurveTo(CX + 145, 395, CX + 186, 305, CX + 144, 218);
+    ctx.bezierCurveTo(CX + 138, 88, CX - 138, 88, CX - 144, 218);
+    ctx.fill();
+
+    ctx.strokeStyle = hexToRgba(hairHighlight, 0.24);
+    ctx.lineWidth = 3.2;
+    for (const side of [-1, 1]) {
+      ctx.beginPath();
+      ctx.moveTo(CX + side * 134, 260);
+      ctx.bezierCurveTo(
+        CX + side * 165,
+        340,
+        CX + side * 128,
+        420,
+        CX + side * 155,
+        540
+      );
+      ctx.stroke();
+    }
   }
   ctx.restore();
 }
@@ -239,6 +307,30 @@ function drawHairFront(ctx: CanvasRenderingContext2D, model: ModelProfile) {
     ctx.bezierCurveTo(CX + 125, 145, CX + 95, 92, CX, 88);
     ctx.bezierCurveTo(CX - 95, 92, CX - 125, 145, CX - 105, 198);
     ctx.fill();
+  } else if (model.hairStyle === 'updo') {
+    // Sleek pulled-back hairline revealing ears & face contour
+    ctx.beginPath();
+    ctx.moveTo(CX, 132);
+    ctx.bezierCurveTo(CX + 56, 134, CX + 100, 168, CX + 110, 232);
+    ctx.bezierCurveTo(CX + 114, 172, CX + 96, 102, CX, 96);
+    ctx.bezierCurveTo(CX - 96, 102, CX - 114, 172, CX - 110, 232);
+    ctx.bezierCurveTo(CX - 100, 168, CX - 56, 134, CX, 132);
+    ctx.fill();
+  } else if (model.hairStyle === 'curls') {
+    ctx.beginPath();
+    ctx.moveTo(CX - 4, 132);
+    ctx.bezierCurveTo(CX + 58, 135, CX + 112, 180, CX + 124, 260);
+    ctx.bezierCurveTo(CX + 140, 180, CX + 118, 96, CX, 92);
+    ctx.bezierCurveTo(CX - 118, 96, CX - 140, 180, CX - 124, 260);
+    ctx.bezierCurveTo(CX - 112, 180, CX - 58, 135, CX - 4, 132);
+    ctx.fill();
+    for (const side of [-1, 1]) {
+      ctx.fillStyle = hairBase;
+      ctx.beginPath();
+      ctx.arc(CX + side * 102, 160, 20, 0, Math.PI * 2);
+      ctx.arc(CX + side * 116, 204, 22, 0, Math.PI * 2);
+      ctx.fill();
+    }
   } else {
     ctx.beginPath();
     ctx.moveTo(CX - 4, 132);
@@ -254,7 +346,7 @@ function drawHairFront(ctx: CanvasRenderingContext2D, model: ModelProfile) {
   for (const side of [-1, 1]) {
     ctx.beginPath();
     ctx.moveTo(CX + side * 22, 114);
-    ctx.quadraticCurveTo(CX + side * 85, 132, CX + side * 116, 224);
+    ctx.quadraticCurveTo(CX + side * 85, 132, CX + side * 112, 218);
     ctx.stroke();
   }
   ctx.restore();

@@ -30,6 +30,7 @@ import {
   RealisticModelCanvasHandle,
 } from './components/RealisticModelCanvas';
 import { SavedFiguresView } from './components/SavedFiguresView';
+import { StartMenuView } from './components/StartMenuView';
 import { TopicsOverviewView } from './components/TopicsOverviewView';
 import {
   auth,
@@ -45,6 +46,7 @@ import {
   AppliedMakeupState,
   BrushSize,
   DailyStatsMap,
+  HairStyle,
   MakeupShade,
   MakeupStyle,
   MakeupToolMode,
@@ -58,9 +60,31 @@ import {
 } from './types';
 import { playTone } from './utils/sound';
 
-type AppTab = 'studio' | 'saved' | 'guide' | 'topics';
+type AppTab = 'menu' | 'studio' | 'saved' | 'guide' | 'topics';
 
 const LOCAL_PROGRESS_KEY = 'glam_graph_local_progress_v1';
+const LOCAL_HAIRSTYLES_KEY = 'glam_graph_hairstyles_v1';
+const VALID_HAIRSTYLES: HairStyle[] = ['waves', 'sleek', 'curls', 'braids', 'afro', 'bob', 'updo'];
+
+function isValidHairStyle(value: unknown): value is HairStyle {
+  return typeof value === 'string' && VALID_HAIRSTYLES.includes(value as HairStyle);
+}
+
+function loadLocalHairStyles(): Partial<Record<string, HairStyle>> {
+  try {
+    const raw = window.localStorage.getItem(LOCAL_HAIRSTYLES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const result: Partial<Record<string, HairStyle>> = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (isValidHairStyle(v)) result[k] = v;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
 
 interface LocalProgressSnapshot {
   glamStars: number;
@@ -190,9 +214,35 @@ function sanitizeTitle(raw: string): string {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<AppTab>('studio');
+  const [activeTab, setActiveTab] = useState<AppTab>('menu');
   const [selectedModel, setSelectedModel] = useState<ModelProfile>(MODELS[2]);
+  const [modelHairStyles, setModelHairStyles] = useState<Partial<Record<string, HairStyle>>>(
+    loadLocalHairStyles
+  );
   const [activeZone, setActiveZone] = useState<MakeupZoneId>('blush');
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(LOCAL_HAIRSTYLES_KEY, JSON.stringify(modelHairStyles));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [modelHairStyles]);
+
+  const selectedHairStyle: HairStyle =
+    modelHairStyles[selectedModel.id] || selectedModel.hairStyle;
+
+  const effectiveModel: ModelProfile = useMemo(
+    () => ({ ...selectedModel, hairStyle: selectedHairStyle }),
+    [selectedModel, selectedHairStyle]
+  );
+
+  const handleSelectHairStyle = useCallback(
+    (style: HairStyle) => {
+      setModelHairStyles((prev) => ({ ...prev, [selectedModel.id]: style }));
+    },
+    [selectedModel.id]
+  );
   const [loadedShades, setLoadedShades] = useState<Record<MakeupZoneId, MakeupShade>>(
     buildInitialLoadedShades
   );
@@ -411,6 +461,7 @@ export default function App() {
               ownerId: String(data.ownerId || user.uid),
               title: String(data.title || 'Saved Look'),
               modelId: String(data.modelId || 'maya'),
+              ...(isValidHairStyle(data.hairStyle) ? { hairStyle: data.hairStyle } : {}),
               thumbnailDataUrl: String(data.thumbnailDataUrl || ''),
               makeupState: (data.makeupState || {}) as AppliedMakeupState,
               zoneMasks: (data.zoneMasks || {}) as Record<string, string>,
@@ -835,6 +886,7 @@ export default function App() {
         ownerId: user.uid,
         title: sanitizeTitle(lookTitleInput),
         modelId: selectedModel.id,
+        hairStyle: selectedHairStyle,
         thumbnailDataUrl: thumbnailDataUrl.slice(0, 120000),
         makeupState: cleanMakeup,
         zoneMasks: boundedMasks,
@@ -846,6 +898,7 @@ export default function App() {
           await updateDoc(figDocRef, {
             title: payload.title,
             modelId: payload.modelId,
+            hairStyle: payload.hairStyle,
             thumbnailDataUrl: payload.thumbnailDataUrl,
             makeupState: payload.makeupState,
             zoneMasks: payload.zoneMasks,
@@ -879,6 +932,9 @@ export default function App() {
   const handleLoadSavedFigure = (fig: SavedFigureRecord) => {
     const model = MODELS.find((m) => m.id === fig.modelId) || MODELS[2];
     setSelectedModel(model);
+    if (isValidHairStyle(fig.hairStyle)) {
+      setModelHairStyles((prev) => ({ ...prev, [model.id]: fig.hairStyle }));
+    }
     setMakeup(fig.makeupState || {});
     setActiveFigureId(fig.id);
     setActiveTab('studio');
@@ -913,7 +969,7 @@ export default function App() {
           {/* Zone 1: Brand Title */}
           <button
             type="button"
-            onClick={() => setActiveTab('studio')}
+            onClick={() => setActiveTab('menu')}
             className="font-display text-xl font-semibold tracking-tight text-[#1C1917] whitespace-nowrap shrink-0 cursor-pointer"
           >
             Glam &amp; Graph
@@ -921,6 +977,17 @@ export default function App() {
 
           {/* Zone 2: Clean Single-Line Nav Links */}
           <nav className="flex items-center gap-4 sm:gap-7 text-sm font-medium overflow-x-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab('menu')}
+              className={`whitespace-nowrap shrink-0 pb-0.5 transition-colors cursor-pointer ${
+                activeTab === 'menu'
+                  ? 'text-[#9D174D] border-b-2 border-[#9D174D]'
+                  : 'text-[#57534E] hover:text-[#1C1917]'
+              }`}
+            >
+              Main Menu
+            </button>
             <button
               type="button"
               onClick={() => setActiveTab('studio')}
@@ -1013,6 +1080,28 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'menu' && (
+          <StartMenuView
+            selectedModel={selectedModel}
+            onSelectModel={handleSelectModel}
+            selectedHairStyle={selectedHairStyle}
+            onSelectHairStyle={handleSelectHairStyle}
+            selectedTopic={selectedTopic}
+            onSelectTopic={setSelectedTopic}
+            totalProblemsCount={ALL_PROBLEMS.length}
+            masteredCount={solvedIds.size}
+            totalCorrect={totalQuestionsSolved}
+            totalIncorrect={totalIncorrect}
+            glamStars={glamStars}
+            savedFiguresCount={savedFigures.length}
+            isSignedIn={Boolean(user)}
+            userFirstName={user?.displayName?.split(' ')[0]}
+            onSignIn={handleGoogleSignIn}
+            onEnterStudio={() => setActiveTab('studio')}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+          />
+        )}
+
         {activeTab === 'studio' && (
           <>
             {/* Workspace Status Toolbar */}
@@ -1070,7 +1159,7 @@ export default function App() {
               <div className="lg:col-span-5 lg:sticky lg:top-20">
                 <RealisticModelCanvas
                   ref={canvasRef}
-                  model={selectedModel}
+                  model={effectiveModel}
                   makeup={makeup}
                   activeZone={activeZone}
                   activeShadeHex={activeShadeHex}
@@ -1091,6 +1180,8 @@ export default function App() {
                 <MakeupStudioPanel
                   selectedModel={selectedModel}
                   onSelectModel={handleSelectModel}
+                  selectedHairStyle={selectedHairStyle}
+                  onSelectHairStyle={handleSelectHairStyle}
                   activeZone={activeZone}
                   onSelectZone={setActiveZone}
                   loadedShades={loadedShades}

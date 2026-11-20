@@ -1,10 +1,21 @@
 import {
+  HairStyle,
   MakeupProduct,
   MakeupZoneId,
   ModelProfile,
   UnlockableToolId,
   UnlockableToolInfo,
 } from '../types';
+
+export const HAIRSTYLE_OPTIONS: { id: HairStyle; label: string }[] = [
+  { id: 'waves', label: 'Soft Waves' },
+  { id: 'sleek', label: 'Sleek Straight' },
+  { id: 'bob', label: 'Classic Bob' },
+  { id: 'curls', label: 'Bouncy Curls' },
+  { id: 'braids', label: 'Box Braids' },
+  { id: 'afro', label: 'Natural Afro' },
+  { id: 'updo', label: 'High Bun' },
+];
 
 export const STARTER_ZONES: MakeupZoneId[] = [
   'foundation',

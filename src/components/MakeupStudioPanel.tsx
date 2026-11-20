@@ -3,6 +3,7 @@ import { Brush, Eraser, Lock, RotateCcw, Sparkles, Star } from 'lucide-react';
 import {
   getToolInfo,
   getZoneUnlockToolId,
+  HAIRSTYLE_OPTIONS,
   MAKEUP_PRODUCTS,
   MODELS,
   STARTER_ZONES,
@@ -10,6 +11,7 @@ import {
 import {
   AppliedMakeupState,
   BrushSize,
+  HairStyle,
   MakeupGroup,
   MakeupShade,
   MakeupStyle,
@@ -22,6 +24,8 @@ import {
 interface Props {
   selectedModel: ModelProfile;
   onSelectModel: (model: ModelProfile) => void;
+  selectedHairStyle: HairStyle;
+  onSelectHairStyle: (style: HairStyle) => void;
   activeZone: MakeupZoneId;
   onSelectZone: (zone: MakeupZoneId) => void;
   loadedShades: Record<MakeupZoneId, MakeupShade>;
@@ -51,6 +55,8 @@ function formatQuestionCost(cost: number): string {
 export const MakeupStudioPanel: React.FC<Props> = ({
   selectedModel,
   onSelectModel,
+  selectedHairStyle,
+  onSelectHairStyle,
   activeZone,
   onSelectZone,
   loadedShades,
@@ -217,6 +223,32 @@ export const MakeupStudioPanel: React.FC<Props> = ({
               </button>
             );
           })}
+        </div>
+
+        {/* Hairstyle Selector for Active Model */}
+        <div className="mt-3 pt-2.5 border-t border-[#E7E1DA]/80 flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs font-semibold text-[#44403C] whitespace-nowrap">
+            {selectedModel.name}’s Hairstyle:
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {HAIRSTYLE_OPTIONS.map((hs) => {
+              const active = selectedHairStyle === hs.id;
+              return (
+                <button
+                  key={hs.id}
+                  type="button"
+                  onClick={() => onSelectHairStyle(hs.id)}
+                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    active
+                      ? 'bg-[#1C1917] text-white'
+                      : 'bg-white border border-[#D6CFC7] text-[#44403C] hover:bg-[#F3EFEA]'
+                  }`}
+                >
+                  {hs.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

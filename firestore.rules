@@ -118,6 +118,7 @@ service cloud.firestore {
           'ownerId',
           'title',
           'modelId',
+          'hairStyle',
           'thumbnailDataUrl',
           'makeupState',
           'zoneMasks',
@@ -134,6 +135,7 @@ service cloud.firestore {
         && data.modelId is string
         && isValidId(data.modelId)
         && data.modelId.size() <= 40
+        && (!('hairStyle' in data) || (data.hairStyle is string && data.hairStyle in ['waves', 'sleek', 'curls', 'braids', 'afro', 'bob', 'updo']))
         && data.thumbnailDataUrl is string
         && data.thumbnailDataUrl.size() >= 10
         && data.thumbnailDataUrl.size() <= 120000
@@ -209,6 +211,7 @@ service cloud.firestore {
           && incoming().diff(existing()).affectedKeys().hasOnly([
             'title',
             'modelId',
+            'hairStyle',
             'thumbnailDataUrl',
             'makeupState',
             'zoneMasks',

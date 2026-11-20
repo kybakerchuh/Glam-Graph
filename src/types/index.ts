@@ -232,12 +232,14 @@ export interface SkinPalette {
   hairShadow: string;
 }
 
+export type HairStyle = 'waves' | 'sleek' | 'curls' | 'braids' | 'afro' | 'bob' | 'updo';
+
 export interface ModelProfile {
   id: string;
   name: string;
   skinToneLabel: string;
   undertoneLabel: string;
-  hairStyle: 'waves' | 'sleek' | 'curls' | 'braids' | 'afro' | 'bob';
+  hairStyle: HairStyle;
   faceShape: 'oval' | 'heart' | 'round' | 'sculpted';
   lipFullness: number;
   eyeTilt: number;
@@ -250,6 +252,7 @@ export interface SavedFigureRecord {
   ownerId: string;
   title: string;
   modelId: string;
+  hairStyle?: HairStyle;
   thumbnailDataUrl: string;
   makeupState: AppliedMakeupState;
   zoneMasks: Record<string, string>;
