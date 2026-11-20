@@ -1,0 +1,156 @@
+{
+  "entities": {
+    "UserProgress": {
+      "title": "UserProgress",
+      "description": "Private student OST review progress, Glam Stars balance, and unlocked brushes, tools, and shades.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the student owner."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Student display name shown inside her private studio."
+        },
+        "glamStars": {
+          "type": "number",
+          "description": "Spendable Glam Stars earned by correctly answering Algebra 1 OST problems."
+        },
+        "totalQuestionsSolved": {
+          "type": "number",
+          "description": "Total number of correct OST answers recorded over time."
+        },
+        "totalIncorrect": {
+          "type": "number",
+          "description": "Total number of incorrect OST answers recorded over time."
+        },
+        "streak": {
+          "type": "number",
+          "description": "Current consecutive correct OST answer streak."
+        },
+        "solvedIds": {
+          "type": "array",
+          "description": "Bounded list of mastered OST problem IDs (up to 350)."
+        },
+        "unlockedShades": {
+          "type": "array",
+          "description": "Bounded list of unlocked makeup shade IDs."
+        },
+        "unlockedTools": {
+          "type": "array",
+          "description": "Bounded list of unlocked brush sizes, wipe tool, makeup zones, and wing/lash styles."
+        },
+        "topicStats": {
+          "type": "object",
+          "description": "Map of topic index keys (t0..t9) to { correct, incorrect } counts over time."
+        },
+        "dailyStats": {
+          "type": "object",
+          "description": "Map of YYYY-MM-DD dates (up to 90 days) to { correct, incorrect } counts over time."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the student profile was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of the latest progress update."
+        }
+      },
+      "required": [
+        "ownerId",
+        "displayName",
+        "glamStars",
+        "totalQuestionsSolved",
+        "totalIncorrect",
+        "streak",
+        "solvedIds",
+        "unlockedShades",
+        "unlockedTools",
+        "topicStats",
+        "dailyStats",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SavedFigure": {
+      "title": "SavedFigure",
+      "description": "A saved model portrait look created with physical cursor brushwork.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the student who saved this look."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Custom look name given by the student."
+        },
+        "modelId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Identifier of the selected realistic model."
+        },
+        "thumbnailDataUrl": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 120000,
+          "description": "Compact JPEG preview snapshot of the painted portrait."
+        },
+        "makeupState": {
+          "type": "object",
+          "description": "Map of applied makeup zones to shade, finish, opacity, and style settings."
+        },
+        "zoneMasks": {
+          "type": "object",
+          "description": "Map of painted zone IDs to compact PNG alpha-mask data URLs for reloading strokes."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the look was first saved."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the look was last updated."
+        }
+      },
+      "required": [
+        "ownerId",
+        "title",
+        "modelId",
+        "thumbnailDataUrl",
+        "makeupState",
+        "zoneMasks",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProgress" },
+      "description": "Private student OST progress, Glam Stars balance, and unlocked brushes/tools/shades."
+    },
+    "/users/{userId}/figures/{figureId}": {
+      "schema": { "$ref": "#/entities/SavedFigure" },
+      "description": "Saved makeup looks owned by the student, supporting preview, reload onto canvas, and delete."
+    }
+  }
+}

@@ -1,0 +1,227 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Reusable Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function parentUserExists(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId));
+    }
+
+    function isValidStringArray(arr, maxLen) {
+      return arr is list
+        && arr.size() <= maxLen
+        && (arr.size() == 0 || arr[0] is string);
+    }
+
+    function isValidUserProgress(data, userId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'displayName',
+          'glamStars',
+          'totalQuestionsSolved',
+          'totalIncorrect',
+          'streak',
+          'solvedIds',
+          'unlockedShades',
+          'unlockedTools',
+          'topicStats',
+          'dailyStats',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId',
+          'displayName',
+          'glamStars',
+          'totalQuestionsSolved',
+          'totalIncorrect',
+          'streak',
+          'solvedIds',
+          'unlockedShades',
+          'unlockedTools',
+          'topicStats',
+          'dailyStats',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.ownerId is string
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.ownerId == userId
+        && data.displayName is string
+        && data.displayName.size() >= 1
+        && data.displayName.size() <= 80
+        && data.glamStars is number
+        && data.glamStars >= 0
+        && data.glamStars <= 10000
+        && data.totalQuestionsSolved is number
+        && data.totalQuestionsSolved >= 0
+        && data.totalQuestionsSolved <= 50000
+        && data.totalIncorrect is number
+        && data.totalIncorrect >= 0
+        && data.totalIncorrect <= 50000
+        && data.streak is number
+        && data.streak >= 0
+        && data.streak <= 50000
+        && isValidStringArray(data.solvedIds, 350)
+        && isValidStringArray(data.unlockedShades, 200)
+        && isValidStringArray(data.unlockedTools, 60)
+        && data.topicStats is map
+        && data.topicStats.size() <= 12
+        && data.dailyStats is map
+        && data.dailyStats.size() <= 90
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidSavedFigure(data, userId) {
+      return data.keys().hasAll([
+          'ownerId',
+          'title',
+          'modelId',
+          'thumbnailDataUrl',
+          'makeupState',
+          'zoneMasks',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId',
+          'title',
+          'modelId',
+          'thumbnailDataUrl',
+          'makeupState',
+          'zoneMasks',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.ownerId is string
+        && isValidId(data.ownerId)
+        && data.ownerId == request.auth.uid
+        && data.ownerId == userId
+        && data.title is string
+        && data.title.size() >= 1
+        && data.title.size() <= 80
+        && data.modelId is string
+        && isValidId(data.modelId)
+        && data.modelId.size() <= 40
+        && data.thumbnailDataUrl is string
+        && data.thumbnailDataUrl.size() >= 10
+        && data.thumbnailDataUrl.size() <= 120000
+        && data.makeupState is map
+        && data.makeupState.size() <= 15
+        && data.zoneMasks is map
+        && data.zoneMasks.size() <= 15
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Student Private Progress Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId)
+        && isValidId(userId)
+        && (resource == null || existing().ownerId == request.auth.uid);
+      allow list: if false;
+
+      allow create: if isOwner(userId)
+        && isValidId(userId)
+        && isValidUserProgress(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isOwner(userId)
+        && isValidId(userId)
+        && isValidUserProgress(incoming(), userId)
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName',
+          'glamStars',
+          'totalQuestionsSolved',
+          'totalIncorrect',
+          'streak',
+          'solvedIds',
+          'unlockedShades',
+          'unlockedTools',
+          'topicStats',
+          'dailyStats',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+
+      // Student Saved Makeup Figures Subcollection
+      match /figures/{figureId} {
+        allow get: if isOwner(userId)
+          && isValidId(userId)
+          && isValidId(figureId)
+          && (resource == null || existing().ownerId == request.auth.uid)
+          && parentUserExists(userId);
+
+        allow list: if isOwner(userId)
+          && existing().ownerId == request.auth.uid;
+
+        allow create: if isOwner(userId)
+          && isValidId(userId)
+          && isValidId(figureId)
+          && isValidSavedFigure(incoming(), userId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && parentUserExists(userId);
+
+        allow update: if isOwner(userId)
+          && isValidId(userId)
+          && isValidId(figureId)
+          && isValidSavedFigure(incoming(), userId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'title',
+            'modelId',
+            'thumbnailDataUrl',
+            'makeupState',
+            'zoneMasks',
+            'updatedAt'
+          ])
+          && parentUserExists(userId);
+
+        allow delete: if isOwner(userId)
+          && isValidId(userId)
+          && isValidId(figureId)
+          && existing().ownerId == request.auth.uid
+          && parentUserExists(userId);
+      }
+    }
+  }
+}

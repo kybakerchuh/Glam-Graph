@@ -1,0 +1,6 @@
+{
+  "name": "Glam & Graph: Algebra 1 OST Makeup Studio",
+  "description": "An interactive Algebra 1 OST review game and realistic makeup studio featuring 300 playbook-aligned problems, vertical fractions, true exponents, and diverse models.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
