@@ -16,14 +16,14 @@ export const MakeupGuideView: React.FC<Props> = ({ onJumpToZone }) => {
         </h1>
         <p className="mt-2 text-sm text-[#44403C] leading-relaxed">
           Every product in the studio explained in plain language—what it is called, exactly where on
-          the face it goes, and how different shades complement skin tones from Fair Porcelain to Deep Espresso.
+          the face it goes, and how different shades complement every complexion and undertone.
         </p>
       </div>
 
-      {/* Skin Tone Spectrum Reference */}
+      {/* Model Undertones Reference */}
       <section className="rounded-xl border border-[#E7E1DA] bg-white p-5">
         <h2 className="text-lg font-semibold text-[#1C1917] mb-3">
-          Studio Models &amp; Undertones (Light to Deep)
+          Studio Models &amp; Undertones
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {MODELS.map((m) => (
@@ -39,7 +39,6 @@ export const MakeupGuideView: React.FC<Props> = ({ onJumpToZone }) => {
               />
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[#1C1917]">{m.name}</div>
-                <div className="text-xs text-[#44403C]">{m.skinToneLabel}</div>
                 <div className="text-[11px] text-[#78716C]">{m.undertoneLabel}</div>
               </div>
             </div>

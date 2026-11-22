@@ -64,7 +64,30 @@ type AppTab = 'menu' | 'studio' | 'saved' | 'guide' | 'topics';
 
 const LOCAL_PROGRESS_KEY = 'glam_graph_local_progress_v1';
 const LOCAL_HAIRSTYLES_KEY = 'glam_graph_hairstyles_v1';
-const VALID_HAIRSTYLES: HairStyle[] = ['waves', 'sleek', 'curls', 'braids', 'afro', 'bob', 'updo'];
+const VALID_HAIRSTYLES: HairStyle[] = [
+  'waves',
+  'sleek',
+  'curls',
+  'braids',
+  'afro',
+  'bob',
+  'updo',
+  'messy_bun',
+  'large_bun',
+  'low_bun',
+  'ballerina_bun',
+  'fulani_flip',
+  'large_knotless',
+  'smedium_knotless',
+  'jada_wada',
+  'fishnet_braids',
+  'quick_weave',
+  'side_part',
+  'straight',
+  'middle_part',
+  'half_up_half_down',
+  'fluffy_ponytail',
+];
 
 function isValidHairStyle(value: unknown): value is HairStyle {
   return typeof value === 'string' && VALID_HAIRSTYLES.includes(value as HairStyle);

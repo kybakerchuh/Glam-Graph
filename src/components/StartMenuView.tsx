@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ArrowRight,
   BarChart3,
@@ -9,8 +9,11 @@ import {
   Palette,
   Star,
 } from 'lucide-react';
-import { HAIRSTYLE_OPTIONS, MODELS } from '../data/makeupCatalog';
+import { HAIRSTYLE_OPTIONS, HairstyleCategory, MODELS } from '../data/makeupCatalog';
 import { HairStyle, ModelProfile, OST_TOPICS, OstTopic } from '../types';
+import { ModelPortraitPreview } from './ModelPortraitPreview';
+
+const HAIR_CATEGORIES: ('All' | HairstyleCategory)[] = ['All', 'Buns', 'Braids', 'Parts & Styles'];
 
 interface Props {
   selectedModel: ModelProfile;
@@ -51,6 +54,25 @@ export const StartMenuView: React.FC<Props> = ({
   onEnterStudio,
   onNavigateTab,
 }) => {
+  const [hairCategory, setHairCategory] = useState<'All' | HairstyleCategory>('All');
+  const filteredHairstyles =
+    hairCategory === 'All'
+      ? HAIRSTYLE_OPTIONS
+      : HAIRSTYLE_OPTIONS.filter((h) => h.category === hairCategory);
+
+  const activeHairLabel =
+    HAIRSTYLE_OPTIONS.find((h) => h.id === selectedHairStyle)?.label ||
+    (selectedHairStyle === 'sleek'
+      ? 'Straight'
+      : selectedHairStyle === 'updo'
+      ? 'Ballerina Bun'
+      : selectedHairStyle);
+
+  const effectivePreviewModel = useMemo(
+    () => ({ ...selectedModel, hairStyle: selectedHairStyle }),
+    [selectedModel, selectedHairStyle]
+  );
+
   const totalAttempts = totalCorrect + totalIncorrect;
   const overallAccuracy =
     totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : null;
@@ -93,7 +115,7 @@ export const StartMenuView: React.FC<Props> = ({
                   1. Choose Your Model
                 </span>
                 <span className="text-xs text-[#57534E]">
-                  Selected: <strong className="text-[#1C1917]">{selectedModel.name}</strong> ({selectedModel.skinToneLabel})
+                  Selected: <strong className="text-[#1C1917]">{selectedModel.name}</strong>
                 </span>
               </div>
 
@@ -111,14 +133,15 @@ export const StartMenuView: React.FC<Props> = ({
                           : 'border-[#E7E1DA] bg-[#FAF8F6]/60 hover:border-[#C6BEB5] hover:bg-[#FAF8F6]'
                       }`}
                     >
-                      <span
-                        className="relative h-9 w-9 rounded-full shrink-0 border border-black/10 flex items-center justify-center"
-                        style={{
-                          background: `radial-gradient(circle at 35% 30%, ${model.palette.highlight}, ${model.palette.base} 55%, ${model.palette.shadow})`,
-                        }}
-                      >
+                      <span className="relative h-10 w-10 shrink-0">
+                        <span className="block h-full w-full rounded-full border border-black/15 overflow-hidden bg-[#F3EDE6]">
+                          <ModelPortraitPreview
+                            model={model}
+                            className="h-full w-full object-cover object-top"
+                          />
+                        </span>
                         {isSelected && (
-                          <span className="h-4 w-4 rounded-full bg-[#9D174D] text-white flex items-center justify-center shadow-sm">
+                          <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#9D174D] text-white flex items-center justify-center shadow-sm ring-1 ring-white">
                             <Check className="h-2.5 w-2.5 stroke-[3]" />
                           </span>
                         )}
@@ -127,9 +150,6 @@ export const StartMenuView: React.FC<Props> = ({
                         <span className="block text-xs font-semibold text-[#1C1917] truncate">
                           {model.name}
                         </span>
-                        <span className="block text-[11px] text-[#57534E] truncate">
-                          {model.skinToneLabel}
-                        </span>
                       </span>
                     </button>
                   );
@@ -137,19 +157,41 @@ export const StartMenuView: React.FC<Props> = ({
               </div>
 
               {/* Hairstyle Selector for Chosen Model */}
-              <div className="pt-2 space-y-1.5">
-                <span className="block text-xs font-semibold text-[#44403C]">
-                  {selectedModel.name}’s Hairstyle
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {HAIRSTYLE_OPTIONS.map((hs) => {
+              <div className="pt-2 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-semibold text-[#44403C]">
+                    {selectedModel.name}’s Hairstyle:{' '}
+                    <span className="text-[#9D174D]">{activeHairLabel}</span>
+                  </span>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {HAIR_CATEGORIES.map((cat) => {
+                      const isCatActive = hairCategory === cat;
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => setHairCategory(cat)}
+                          className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                            isCatActive
+                              ? 'bg-[#9D174D] text-white'
+                              : 'bg-white border border-[#E7E1DA] text-[#57534E] hover:bg-[#F3EFEA]'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-0.5">
+                  {filteredHairstyles.map((hs) => {
                     const active = selectedHairStyle === hs.id;
                     return (
                       <button
                         key={hs.id}
                         type="button"
                         onClick={() => onSelectHairStyle(hs.id)}
-                        className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                        className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                           active
                             ? 'bg-[#1C1917] text-white'
                             : 'bg-[#FAF8F6] border border-[#D6CFC7] text-[#44403C] hover:bg-[#F3EFEA]'
@@ -227,13 +269,27 @@ export const StartMenuView: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Right Column: Live Progress Snapshot & How-to-Play Breakdown */}
+        {/* Right Column: Live Model Preview + Progress Snapshot & How-to-Play Breakdown */}
         <div className="lg:col-span-5 rounded-xl border border-[#E7E1DA] bg-white p-6 flex flex-col justify-between gap-6">
           <div className="space-y-3">
-            <h2 className="text-base font-semibold text-[#1C1917] font-sans">
-              Your Studio Snapshot
-            </h2>
-            <div className="grid grid-cols-2 gap-px rounded-lg border border-[#E7E1DA] bg-[#E7E1DA] overflow-hidden">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-base font-semibold text-[#1C1917] font-sans">
+                Live Model &amp; Studio Snapshot
+              </h2>
+              <span className="text-xs text-[#57534E] whitespace-nowrap">
+                {selectedModel.name} · {activeHairLabel}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+              <div className="w-28 sm:w-32 mx-auto sm:mx-0 shrink-0 rounded-lg border border-[#E7E1DA] bg-[#F3EDE6] overflow-hidden aspect-[540/640]">
+                <ModelPortraitPreview
+                  model={effectivePreviewModel}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+
+              <div className="flex-1 grid grid-cols-2 gap-px rounded-lg border border-[#E7E1DA] bg-[#E7E1DA] overflow-hidden">
               <div className="bg-[#FAF8F6] p-3.5">
                 <div className="text-[11px] text-[#57534E]">OST Mastered</div>
                 <div className="mt-0.5 text-lg font-semibold text-[#1C1917] tabular-nums">
@@ -263,6 +319,7 @@ export const StartMenuView: React.FC<Props> = ({
                 <div className="mt-0.5 text-lg font-semibold text-[#1C1917] tabular-nums">
                   {savedFiguresCount}
                 </div>
+              </div>
               </div>
             </div>
           </div>

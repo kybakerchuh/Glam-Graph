@@ -134,7 +134,7 @@ export const SavedFiguresView: React.FC<Props> = ({
                   <div>
                     <h3 className="text-sm font-semibold text-[#1C1917] truncate">{fig.title}</h3>
                     <p className="text-xs text-[#57534E] mt-0.5">
-                      {model.name} · {model.skinToneLabel}
+                      {model.name}
                     </p>
                     <p className="text-[11px] text-[#78716C] mt-1.5">
                       {appliedZones.length === 0

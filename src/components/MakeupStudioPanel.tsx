@@ -4,10 +4,12 @@ import {
   getToolInfo,
   getZoneUnlockToolId,
   HAIRSTYLE_OPTIONS,
+  HairstyleCategory,
   MAKEUP_PRODUCTS,
   MODELS,
   STARTER_ZONES,
 } from '../data/makeupCatalog';
+import { ModelPortraitPreview } from './ModelPortraitPreview';
 import {
   AppliedMakeupState,
   BrushSize,
@@ -47,6 +49,7 @@ interface Props {
 }
 
 const GROUPS: MakeupGroup[] = ['Face', 'Cheeks', 'Brows & Eyes', 'Lips'];
+const HAIR_CATEGORIES: ('All' | HairstyleCategory)[] = ['All', 'Buns', 'Braids', 'Parts & Styles'];
 
 function formatQuestionCost(cost: number): string {
   return cost === 1 ? '1 Question' : `${cost} Questions`;
@@ -78,6 +81,20 @@ export const MakeupStudioPanel: React.FC<Props> = ({
 }) => {
   const activeProduct = MAKEUP_PRODUCTS.find((p) => p.zone === activeZone) || MAKEUP_PRODUCTS[0];
   const [selectedGroup, setSelectedGroup] = useState<MakeupGroup>(activeProduct.group);
+  const [hairCategory, setHairCategory] = useState<'All' | HairstyleCategory>('All');
+
+  const filteredHairstyles =
+    hairCategory === 'All'
+      ? HAIRSTYLE_OPTIONS
+      : HAIRSTYLE_OPTIONS.filter((h) => h.category === hairCategory);
+
+  const activeHairLabel =
+    HAIRSTYLE_OPTIONS.find((h) => h.id === selectedHairStyle)?.label ||
+    (selectedHairStyle === 'sleek'
+      ? 'Straight'
+      : selectedHairStyle === 'updo'
+      ? 'Ballerina Bun'
+      : selectedHairStyle);
 
   const productsInGroup = MAKEUP_PRODUCTS.filter((p) => p.group === selectedGroup);
   const currentLayer = makeup[activeZone];
@@ -152,12 +169,29 @@ export const MakeupStudioPanel: React.FC<Props> = ({
     }
   };
 
+  const getStyleToolId = (styleId: MakeupStyle): UnlockableToolId | null => {
+    switch (styleId) {
+      case 'classic':
+        return 'style_classic';
+      case 'wispy':
+        return 'style_wispy';
+      case 'cat_eyed':
+        return 'style_cat_eyed';
+      case 'spider':
+        return 'style_spider';
+      case 'glam':
+        return 'style_glam';
+      default:
+        return null;
+    }
+  };
+
   const handleStyleClick = (styleId: MakeupStyle) => {
-    if (styleId === 'natural') {
+    const toolId = getStyleToolId(styleId);
+    if (!toolId) {
       onUpdateStyle(activeZone, styleId);
       return;
     }
-    const toolId: UnlockableToolId = styleId === 'classic' ? 'style_classic' : 'style_glam';
     if (unlockedTools.has(toolId)) {
       onUpdateStyle(activeZone, styleId);
       return;
@@ -178,7 +212,7 @@ export const MakeupStudioPanel: React.FC<Props> = ({
       <div className="border-b border-[#E7E1DA] bg-[#FAF8F6] px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
           <h2 className="text-sm font-semibold text-[#1C1917] font-sans">
-            Choose Model (Light to Deep Skin Tones)
+            Choose Model
           </h2>
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#9D174D] tabular-nums">
@@ -210,35 +244,55 @@ export const MakeupStudioPanel: React.FC<Props> = ({
                     : 'border-[#E7E1DA] bg-white hover:border-[#C7BEB4]'
                 }`}
               >
-                <span
-                  className="h-7 w-7 rounded-full border border-black/15 shadow-inner mb-1"
-                  style={{
-                    background: `radial-gradient(circle at 35% 30%, ${m.palette.highlight}, ${m.palette.base} 60%, ${m.palette.shadow})`,
-                  }}
-                />
-                <span className="text-xs font-semibold text-[#1C1917] leading-tight">{m.name}</span>
-                <span className="text-[10px] text-[#57534E] leading-tight mt-0.5 line-clamp-1">
-                  {m.skinToneLabel.split(' ')[0]}
+                <span className="h-10 w-10 rounded-full border border-black/15 overflow-hidden bg-[#F3EDE6] mb-1 shrink-0">
+                  <ModelPortraitPreview
+                    model={m}
+                    className="h-full w-full object-cover object-top"
+                  />
                 </span>
+                <span className="text-xs font-semibold text-[#1C1917] leading-tight">{m.name}</span>
               </button>
             );
           })}
         </div>
 
         {/* Hairstyle Selector for Active Model */}
-        <div className="mt-3 pt-2.5 border-t border-[#E7E1DA]/80 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-[#44403C] whitespace-nowrap">
-            {selectedModel.name}’s Hairstyle:
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            {HAIRSTYLE_OPTIONS.map((hs) => {
+        <div className="mt-3 pt-2.5 border-t border-[#E7E1DA]/80 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-[#44403C] whitespace-nowrap">
+              {selectedModel.name}’s Hairstyle:{' '}
+              <span className="text-[#9D174D]">{activeHairLabel}</span>
+            </span>
+            <div className="flex flex-wrap items-center gap-1">
+              {HAIR_CATEGORIES.map((cat) => {
+                const isCatActive = hairCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setHairCategory(cat)}
+                    className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                      isCatActive
+                        ? 'bg-[#9D174D] text-white'
+                        : 'bg-white border border-[#E7E1DA] text-[#57534E] hover:bg-[#F3EFEA]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-0.5">
+            {filteredHairstyles.map((hs) => {
               const active = selectedHairStyle === hs.id;
               return (
                 <button
                   key={hs.id}
                   type="button"
                   onClick={() => onSelectHairStyle(hs.id)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     active
                       ? 'bg-[#1C1917] text-white'
                       : 'bg-white border border-[#D6CFC7] text-[#44403C] hover:bg-[#F3EFEA]'
@@ -516,19 +570,29 @@ export const MakeupStudioPanel: React.FC<Props> = ({
           {activeProduct.supportsStyle && (
             <div>
               <div className="text-xs font-medium text-[#292524] mb-1.5">
-                {activeZone === 'eyeliner' ? 'Eyeliner Wing Style' : 'Lash Volume Style'}
+                {activeZone === 'eyeliner' ? 'Eyeliner Wing Style' : 'Lash Style'}
               </div>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(
-                  [
-                    { id: 'natural', label: activeZone === 'eyeliner' ? 'Tightline' : 'Natural', cost: 0 },
-                    { id: 'classic', label: activeZone === 'eyeliner' ? 'Classic Wing' : 'Classic', cost: 1 },
-                    { id: 'glam', label: activeZone === 'eyeliner' ? 'Cat-Eye Glam' : 'Full Glam', cost: 3 },
-                  ] as const
+              <div
+                className={`grid gap-1.5 ${
+                  activeZone === 'eyeliner' ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-3'
+                }`}
+              >
+                {(activeZone === 'eyeliner'
+                  ? ([
+                      { id: 'natural', label: 'Tightline', cost: 0, toolId: null },
+                      { id: 'classic', label: 'Classic Wing', cost: 1, toolId: 'style_classic' },
+                      { id: 'glam', label: 'Cat-Eye Glam', cost: 3, toolId: 'style_glam' },
+                    ] as const)
+                  : ([
+                      { id: 'natural', label: 'Natural', cost: 0, toolId: null },
+                      { id: 'classic', label: 'Classic', cost: 1, toolId: 'style_classic' },
+                      { id: 'wispy', label: 'Wispy Lashes', cost: 1, toolId: 'style_wispy' },
+                      { id: 'cat_eyed', label: 'Cat Eyed', cost: 2, toolId: 'style_cat_eyed' },
+                      { id: 'spider', label: 'Spider Lashes', cost: 2, toolId: 'style_spider' },
+                      { id: 'glam', label: 'Full Glam', cost: 3, toolId: 'style_glam' },
+                    ] as const)
                 ).map((st) => {
-                  const unlocked =
-                    st.id === 'natural' ||
-                    unlockedTools.has(st.id === 'classic' ? 'style_classic' : 'style_glam');
+                  const unlocked = !st.toolId || unlockedTools.has(st.toolId);
                   const active = (currentLayer?.style || 'natural') === st.id && unlocked;
 
                   return (

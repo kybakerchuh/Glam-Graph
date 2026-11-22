@@ -174,7 +174,13 @@ export interface MakeupProduct {
 
 export type BrushSize = 'fine' | 'medium' | 'fluffy';
 export type MakeupToolMode = 'apply' | 'wipe';
-export type MakeupStyle = 'natural' | 'classic' | 'glam';
+export type MakeupStyle =
+  | 'natural'
+  | 'classic'
+  | 'glam'
+  | 'wispy'
+  | 'cat_eyed'
+  | 'spider';
 
 export type UnlockableToolId =
   | 'brush_fine'
@@ -189,7 +195,10 @@ export type UnlockableToolId =
   | 'zone_lipliner'
   | 'zone_lipgloss'
   | 'style_classic'
-  | 'style_glam';
+  | 'style_glam'
+  | 'style_wispy'
+  | 'style_cat_eyed'
+  | 'style_spider';
 
 export interface UnlockableToolInfo {
   id: UnlockableToolId;
@@ -232,7 +241,72 @@ export interface SkinPalette {
   hairShadow: string;
 }
 
-export type HairStyle = 'waves' | 'sleek' | 'curls' | 'braids' | 'afro' | 'bob' | 'updo';
+export type HairStyle =
+  | 'waves'
+  | 'sleek'
+  | 'curls'
+  | 'braids'
+  | 'afro'
+  | 'bob'
+  | 'updo'
+  | 'messy_bun'
+  | 'large_bun'
+  | 'low_bun'
+  | 'ballerina_bun'
+  | 'fulani_flip'
+  | 'large_knotless'
+  | 'smedium_knotless'
+  | 'jada_wada'
+  | 'fishnet_braids'
+  | 'quick_weave'
+  | 'side_part'
+  | 'straight'
+  | 'middle_part'
+  | 'half_up_half_down'
+  | 'fluffy_ponytail';
+
+export interface FaceFeatures {
+  foreheadY: number;
+  foreheadWidth: number;
+  cheekWidth: number;
+  cheekY: number;
+  jawWidth: number;
+  jawY: number;
+  jawCurve: 'tapered' | 'oval' | 'angular' | 'round' | 'diamond';
+  chinWidth: number;
+  chinY: number;
+  neckWidth: number;
+  earY: number;
+  eyeShape: 'doe' | 'almond' | 'cat' | 'round';
+  eyeDx: number;
+  eyeY: number;
+  eyeInnerHalf: number;
+  eyeOuterHalf: number;
+  eyeUpperArch: number;
+  eyeLowerDrop: number;
+  irisRadius: number;
+  lidCreaseOffset: number;
+  browY: number;
+  browInnerX: number;
+  browArchX: number;
+  browTailX: number;
+  browThickness: number;
+  browShape: 'soft_arch' | 'high_arch' | 'straight_bold' | 'soft_curved' | 'feathered_full';
+  noseTipY: number;
+  noseBridgeW: number;
+  noseAlarW: number;
+  nostrilDx: number;
+  noseTipStyle: 'button' | 'refined' | 'sculpted' | 'rounded' | 'broad_sculpted' | 'broad_rounded';
+  mouthY: number;
+  lipWidth: number;
+  upperLipScale: number;
+  lowerLipScale: number;
+  cupidsBowDepth: number;
+  smileLift: number;
+  freckles?: boolean;
+  cheekDimples?: boolean;
+  beautyMark?: { x: number; y: number; r?: number };
+}
 
 export interface ModelProfile {
   id: string;
@@ -244,6 +318,7 @@ export interface ModelProfile {
   lipFullness: number;
   eyeTilt: number;
   browArch: number;
+  features: FaceFeatures;
   palette: SkinPalette;
 }
 
