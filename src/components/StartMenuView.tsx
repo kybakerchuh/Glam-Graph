@@ -101,8 +101,8 @@ export const StartMenuView: React.FC<Props> = ({
 
             <p className="text-sm sm:text-base text-[#44403C] leading-relaxed max-w-2xl">
               Solve Ohio State Test problems across all 10 Playbook sheets to earn Glam Stars.
-              Unlock brushes, makeup zones, and custom shades, then paint directly on your chosen
-              model with your cursor.
+              Unlock brushes, makeup zones, and lash styles, then paint with every pigment directly
+              on your chosen model with your cursor.
             </p>
           </div>
 
@@ -341,11 +341,12 @@ export const StartMenuView: React.FC<Props> = ({
               </li>
               <li className="py-3 space-y-0.5">
                 <div className="text-xs font-semibold text-[#1C1917]">
-                  02. Unlock Brushes, Zones &amp; Shades
+                  02. Unlock Brushes, Zones &amp; Styles
                 </div>
                 <p className="text-xs text-[#57534E] leading-relaxed">
                   Every newly mastered question awards 1 Glam Star to unlock Fine Detail &amp; Fluffy
-                  brushes, Micellar Wipe, new zones, and rare 1★–5★ shades.
+                  brushes, Micellar Wipe, new zones, and lash or wing styles—while all makeup
+                  pigments are unlocked for free.
                 </p>
               </li>
               <li className="py-3 space-y-0.5">

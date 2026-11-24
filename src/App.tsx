@@ -1225,7 +1225,7 @@ export default function App() {
                   onPromptSolveForMore={(message) => {
                     setQuizNotice(
                       message ||
-                        'Solve the Algebra 1 OST problem below to earn Glam Stars and unlock more brushes and unique colors!'
+                        'Solve the Algebra 1 OST problem below to earn Glam Stars and unlock more brushes, zones, and styles!'
                     );
                     quizSectionRef.current?.scrollIntoView({
                       behavior: 'smooth',

@@ -466,11 +466,11 @@ export const MakeupStudioPanel: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Shades Grid (Tiered multi-question costs for unique shades) */}
+      {/* Shades Grid (All pigments unlocked & free) */}
       <div className="p-4 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#57534E]">
           <span>
-            Pick a shade to dip your brush, then drag on the model’s face. Rarer shades cost more OST questions!
+            Pick any pigment to dip your brush, then drag on the model’s face—all shades are unlocked!
           </span>
           <span className="tabular-nums font-medium text-[#9D174D]">
             1 Correct OST Problem = 1 ★
@@ -479,7 +479,9 @@ export const MakeupStudioPanel: React.FC<Props> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {activeProduct.shades.map((shade) => {
-            const isUnlocked = Boolean(shade.starterUnlocked || unlockedShades.has(shade.id));
+            const isUnlocked = Boolean(
+              shade.starterUnlocked || shade.cost <= 0 || unlockedShades.has(shade.id)
+            );
             const isLoaded = loadedShade.id === shade.id;
             const canAfford = glamStars >= shade.cost;
 
